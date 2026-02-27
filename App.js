@@ -33,12 +33,12 @@ const MonthYearPicker = ({ value, onChange, availableYears }) => {
   }
   const months = Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0'));
   return (
-    <div className="flex items-center justify-center gap-0.5 bg-white border border-slate-200 rounded-lg px-2 py-1.5 shadow-sm shrink-0">
-      <select value={year} onChange={(e) => onChange(`${e.target.value}-${month}`)} className="bg-transparent font-bold text-slate-700 outline-none appearance-none cursor-pointer text-center text-sm pl-1 pr-0.5">
+    <div className="flex items-center justify-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2.5 shadow-sm shrink-0">
+      <select value={year} onChange={(e) => onChange(`${e.target.value}-${month}`)} className="bg-transparent font-bold text-slate-700 outline-none appearance-none cursor-pointer text-center text-lg pl-1 pr-0.5">
         {years.map(y => <option key={y} value={y}>{y}年</option>)}
       </select>
-      <span className="text-slate-300 font-light text-sm">/</span>
-      <select value={month} onChange={(e) => onChange(`${year}-${e.target.value}`)} className="bg-transparent font-bold text-slate-700 outline-none appearance-none cursor-pointer text-center text-sm pl-0.5 pr-1">
+      <span className="text-slate-300 font-light text-lg">/</span>
+      <select value={month} onChange={(e) => onChange(`${year}-${e.target.value}`)} className="bg-transparent font-bold text-slate-700 outline-none appearance-none cursor-pointer text-center text-lg pl-0.5 pr-1">
         {months.map(m => <option key={m} value={m}>{m}月</option>)}
       </select>
     </div>
@@ -49,7 +49,7 @@ const MonthYearPicker = ({ value, onChange, availableYears }) => {
 const PieChart = ({ data }) => {
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, name: '', value: 0, percent: '' });
   const total = data.reduce((sum, d) => sum + d.value, 0);
-  if (total === 0) return <div className="text-center py-10 text-slate-400">該期間無支出資料</div>;
+  if (total === 0) return <div className="text-center py-10 text-slate-400 text-lg font-bold">該期間無支出資料</div>;
 
   const handleMouseMove = (e, slice, displayPercent) => {
     setTooltip({ show: true, x: e.clientX, y: e.clientY, name: slice.name, value: slice.value, percent: displayPercent });
@@ -82,10 +82,10 @@ const PieChart = ({ data }) => {
     return { ...slice, angle, percentNum, displayPercent, isSmallSlice, isRight, pathData, textXInside, textYInside, startX, startY, elbowX, elbowY };
   });
 
-  const SPACING = 0.16; 
+  const SPACING = 0.2; 
   const resolveCollisions = (slices) => {
     if (slices.length <= 1) return;
-    for(let iter = 0; iter < 10; iter++) {
+    for(let iter = 0; iter < 12; iter++) {
         for (let i = 1; i < slices.length; i++) {
             const diff = slices[i].elbowY - slices[i-1].elbowY;
             if (diff < SPACING) {
@@ -104,35 +104,35 @@ const PieChart = ({ data }) => {
   return (
     <div className="flex flex-col items-center w-full pt-1 pb-1">
       <div className="w-full max-w-[480px] relative shrink-0 flex justify-center">
-        <svg viewBox="-2.0 -1.2 4.0 2.4" className="w-full h-auto drop-shadow-md overflow-visible" style={{ maxHeight: '260px' }} onMouseLeave={handleMouseLeave}>
+        <svg viewBox="-2.2 -1.3 4.4 2.6" className="w-full h-auto drop-shadow-md overflow-visible" style={{ maxHeight: '300px' }} onMouseLeave={handleMouseLeave}>
           {slicesData.map((slice, i) => {
             if (slice.value === total) {
                 return (
                   <g key={i} onMouseMove={(e) => handleMouseMove(e, slice, slice.displayPercent)}>
                     <circle cx="0" cy="0" r="1" fill={slice.color} className="transition-all duration-300 hover:opacity-80 cursor-pointer" />
-                    <text textAnchor="middle" fill="white" fontSize="0.14" fontWeight="bold" className="pointer-events-none">
+                    <text textAnchor="middle" fill="white" fontSize="0.18" fontWeight="bold" className="pointer-events-none">
                       <tspan x="0" y="-0.1">{slice.name}</tspan>
-                      <tspan x="0" y="0.1">{slice.displayPercent}</tspan>
+                      <tspan x="0" y="0.14">{slice.displayPercent}</tspan>
                     </text>
                   </g>
                 );
             }
-            const lineExt = slice.isRight ? 0.12 : -0.12;
+            const lineExt = slice.isRight ? 0.16 : -0.16;
             const endX = slice.elbowX + lineExt;
-            const textXOutside = endX + (slice.isRight ? 0.04 : -0.04);
+            const textXOutside = endX + (slice.isRight ? 0.05 : -0.05);
             return (
               <g key={i}>
                 <path d={slice.pathData} fill={slice.color} stroke="#ffffff" strokeWidth="0.02" className="transition-all duration-300 hover:opacity-80 cursor-pointer" onMouseMove={(e) => handleMouseMove(e, slice, slice.displayPercent)} />
                 {!slice.isSmallSlice && (
-                  <text textAnchor="middle" fill="white" fontSize="0.11" fontWeight="bold" className="pointer-events-none drop-shadow-sm">
-                    <tspan x={slice.textXInside} y={slice.textYInside - 0.05}>{slice.name}</tspan>
-                    <tspan x={slice.textXInside} y={slice.textYInside + 0.08}>{slice.displayPercent}</tspan>
+                  <text textAnchor="middle" fill="white" fontSize="0.14" fontWeight="bold" className="pointer-events-none drop-shadow-sm">
+                    <tspan x={slice.textXInside} y={slice.textYInside - 0.06}>{slice.name}</tspan>
+                    <tspan x={slice.textXInside} y={slice.textYInside + 0.12}>{slice.displayPercent}</tspan>
                   </text>
                 )}
                 {slice.isSmallSlice && (
                   <g className="pointer-events-none">
-                     <polyline points={`${slice.startX},${slice.startY} ${slice.elbowX},${slice.elbowY} ${endX},${slice.elbowY}`} fill="none" stroke={slice.color} strokeWidth="0.015" />
-                     <text x={textXOutside} y={slice.elbowY} textAnchor={slice.isRight ? "start" : "end"} dominantBaseline="central" fill={slice.color} fontSize="0.11" fontWeight="bold">
+                     <polyline points={`${slice.startX},${slice.startY} ${slice.elbowX},${slice.elbowY} ${endX},${slice.elbowY}`} fill="none" stroke={slice.color} strokeWidth="0.02" />
+                     <text x={textXOutside} y={slice.elbowY} textAnchor={slice.isRight ? "start" : "end"} dominantBaseline="central" fill={slice.color} fontSize="0.14" fontWeight="bold">
                        {slice.name} {slice.displayPercent}
                      </text>
                   </g>
@@ -140,18 +140,18 @@ const PieChart = ({ data }) => {
               </g>
             );
           })}
-          <circle cx="0" cy="0" r="0.52" fill="#ffffff" className="pointer-events-none" />
+          <circle cx="0" cy="0" r="0.55" fill="#ffffff" className="pointer-events-none" />
           <text textAnchor="middle" dominantBaseline="central" className="pointer-events-none">
-            <tspan x="0" y="-0.08" fill="#94a3b8" fontSize="0.11" fontWeight="600">總支出</tspan>
-            <tspan x="0" y="0.16" fill="#1e293b" fontSize="0.22" fontWeight="bold">${total.toLocaleString()}</tspan>
+            <tspan x="0" y="-0.12" fill="#94a3b8" fontSize="0.14" fontWeight="600">總支出</tspan>
+            <tspan x="0" y="0.22" fill="#1e293b" fontSize="0.28" fontWeight="bold">${total.toLocaleString()}</tspan>
           </text>
         </svg>
       </div>
       {tooltip.show && (
-        <div className="fixed z-[100] pointer-events-none bg-slate-800 text-white text-xs px-3 py-2 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-[130%] animate-in fade-in zoom-in duration-200" style={{ left: tooltip.x, top: tooltip.y }}>
+        <div className="fixed z-[100] pointer-events-none bg-slate-800 text-white text-base px-4 py-3 rounded-lg shadow-xl transform -translate-x-1/2 -translate-y-[130%] animate-in fade-in zoom-in duration-200" style={{ left: tooltip.x, top: tooltip.y }}>
           <div className="flex flex-col items-center">
             <span className="font-bold">{tooltip.name} ({tooltip.percent})</span>
-            <span className="text-emerald-400 font-bold mt-0.5">${tooltip.value.toLocaleString()}</span>
+            <span className="text-emerald-400 font-bold mt-1">${tooltip.value.toLocaleString()}</span>
           </div>
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
         </div>
@@ -302,102 +302,103 @@ const App = () => {
   const filtered = baseRecords.filter(r => listFilter === '全部收支' ? true : (listFilter === '月費' ? r.item.includes('月費') : r.category === listFilter));
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex justify-center pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex justify-center pb-24">
       <div className="w-full max-w-md bg-white shadow-xl flex flex-col min-h-screen relative">
-        <header className="bg-blue-600 text-white p-4 sticky top-0 z-20 flex justify-between items-center shadow-md">
-          <div className="flex items-center gap-2"><Wallet size={24} /><h1 className="text-xl font-bold tracking-tight">咻伶伶小財庫</h1></div>
-          <button onClick={() => setShowSettings(!showSettings)} className="text-[10px] font-bold bg-blue-700/50 hover:bg-blue-700 px-3 py-1.5 rounded-full transition-colors border border-blue-400/30">⚙️ 設定網址</button>
+        <header className="bg-blue-600 text-white p-6 sticky top-0 z-20 flex justify-between items-center shadow-md">
+          <div className="flex items-center gap-3"><Wallet size={32} /><h1 className="text-3xl font-bold tracking-tight text-white">咻伶伶小財庫</h1></div>
+          <button onClick={() => setShowSettings(!showSettings)} className="text-sm font-bold bg-blue-700/50 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors border border-blue-400/30">⚙️ 設定網址</button>
         </header>
 
         {showSettings && (
-          <div className="p-4 bg-blue-50 border-b border-blue-100 animate-in slide-in-from-top duration-300">
-            <label className="text-xs font-bold text-slate-600">Google Script API 網址</label>
-            <input type="text" value={scriptUrl} onChange={(e) => setScriptUrl(e.target.value)} className="w-full p-2.5 mt-1 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://script.google.com/..." />
-            <button onClick={() => { localStorage.setItem('googleScriptUrl', scriptUrl); setShowSettings(false); }} className="w-full mt-3 bg-blue-600 text-white py-2.5 rounded-lg font-bold text-sm shadow-md">儲存並關閉</button>
+          <div className="p-5 bg-blue-50 border-b border-blue-100 animate-in slide-in-from-top duration-300">
+            <label className="text-base font-bold text-slate-600">Google Script API 網址</label>
+            <input type="text" value={scriptUrl} onChange={(e) => setScriptUrl(e.target.value)} className="w-full p-4 mt-2 rounded-lg border border-slate-300 text-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://script.google.com/..." />
+            <button onClick={() => { localStorage.setItem('googleScriptUrl', scriptUrl); setShowSettings(false); }} className="w-full mt-4 bg-blue-600 text-white py-4 rounded-lg font-bold text-lg shadow-md">儲存並關閉</button>
           </div>
         )}
 
         {activeTab === 'input' ? (
-          <main className="p-5 space-y-5 flex-1 overflow-y-auto">
-            <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
-              <button onClick={() => setTransactionMode('expense')} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionMode === 'expense' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>支出記帳</button>
-              <button onClick={() => setTransactionMode('income')} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionMode === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>收入調整</button>
+          <main className="p-6 space-y-7 flex-1 overflow-y-auto">
+            <div className="flex bg-slate-100 p-2 rounded-xl shadow-inner">
+              <button onClick={() => setTransactionMode('expense')} className={`flex-1 py-4 rounded-lg text-lg font-bold transition-all ${transactionMode === 'expense' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>支出記帳</button>
+              <button onClick={() => setTransactionMode('income')} className={`flex-1 py-4 rounded-lg text-lg font-bold transition-all ${transactionMode === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>收入調整</button>
             </div>
             
             {transactionMode === 'expense' ? (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <section><label className="text-sm font-bold text-slate-700 flex gap-2 items-center mb-1.5"><Calendar size={16} className="text-blue-500"/>消費日期</label><input type="date" value={expenseData.date} onChange={e => setExpenseData({...expenseData, date: e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"/></section>
-                <section><label className="text-sm font-bold text-slate-700 flex gap-2 items-center mb-1.5"><User size={16} className="text-blue-500"/>填表人</label><div className="grid grid-cols-2 gap-2">{spenders.map(s => <button key={s} onClick={()=>setExpenseData({...expenseData, spender: s})} className={`py-3 rounded-xl border font-bold transition-all ${expenseData.spender === s ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-[1.02]' : 'bg-white text-slate-500 border-slate-200'}`}>{s}</button>)}</div></section>
-                <section><label className="text-sm font-bold text-slate-700 flex gap-2 items-center mb-1.5"><ShoppingCart size={16} className="text-blue-500"/>支出項目</label><input type="text" value={expenseData.item} onChange={e => setExpenseData({...expenseData, item: e.target.value})} placeholder="例如：晚餐便當、家樂福採買" className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"/></section>
-                <section><label className="text-sm font-bold text-slate-700 flex gap-2 items-center mb-1.5"><Tags size={16} className="text-blue-500"/>支出類型</label><div className="grid grid-cols-3 gap-2">{categories.map(c => <button key={c.id} onClick={()=>setExpenseData({...expenseData, category: c.label})} className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all ${expenseData.category === c.label ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}><span className="text-xl">{c.icon}</span><span className="text-[10px] font-bold">{c.label}</span></button>)}</div></section>
-                <div className="grid grid-cols-2 gap-4">
-                  <section><label className="text-sm font-bold text-red-500 mb-1.5 block">支出金額</label><div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span><input type="number" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full p-3 pl-8 bg-slate-50 rounded-xl border border-slate-200 text-xl font-black outline-none focus:ring-2 focus:ring-red-500"/></div></section>
-                  <section><label className="text-sm font-bold text-slate-400 mb-1.5 block">目前帳戶餘額</label><div className="p-3 bg-slate-100 rounded-xl text-xl font-bold text-slate-500 border border-slate-200 truncate">${currentBalance.toLocaleString()}</div></section>
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <section><label className="text-lg font-bold text-slate-700 flex gap-2 items-center mb-2.5"><Calendar size={20} className="text-blue-500"/>消費日期</label><input type="date" value={expenseData.date} onChange={e => setExpenseData({...expenseData, date: e.target.value})} className="w-full p-5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-lg"/></section>
+                <section><label className="text-lg font-bold text-slate-700 flex gap-2 items-center mb-2.5"><User size={20} className="text-blue-500"/>填表人</label><div className="grid grid-cols-2 gap-4">{spenders.map(s => <button key={s} onClick={()=>setExpenseData({...expenseData, spender: s})} className={`py-5 rounded-xl border text-lg font-bold transition-all ${expenseData.spender === s ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-[1.02]' : 'bg-white text-slate-500 border-slate-200'}`}>{s}</button>)}</div></section>
+                <section><label className="text-lg font-bold text-slate-700 flex gap-2 items-center mb-2.5"><ShoppingCart size={20} className="text-blue-500"/>支出項目</label><input type="text" value={expenseData.item} onChange={e => setExpenseData({...expenseData, item: e.target.value})} placeholder="例如：晚餐便當、家樂福採買" className="w-full p-5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-lg"/></section>
+                <section><label className="text-lg font-bold text-slate-700 flex gap-2 items-center mb-2.5"><Tags size={20} className="text-blue-500"/>支出類型</label><div className="grid grid-cols-3 gap-3">{categories.map(c => <button key={c.id} onClick={()=>setExpenseData({...expenseData, category: c.label})} className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${expenseData.category === c.label ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}><span className="text-3xl">{c.icon}</span><span className="text-xs font-black">{c.label}</span></button>)}</div></section>
+                <div className="grid grid-cols-2 gap-5">
+                  <section><label className="text-lg font-bold text-red-500 mb-2.5 block">支出金額</label><div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span><input type="number" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full p-5 pl-10 bg-slate-50 rounded-xl border border-slate-200 text-3xl font-black outline-none focus:ring-2 focus:ring-red-500"/></div></section>
+                  <section><label className="text-lg font-bold text-slate-400 mb-2.5 block">帳戶餘額</label><div className="p-5 bg-slate-100 rounded-xl text-2xl font-bold text-slate-500 border border-slate-200 truncate">${currentBalance.toLocaleString()}</div></section>
                 </div>
-                <section><label className="text-sm font-bold text-slate-500 flex gap-2 items-center mb-1.5"><FileText size={16}/>備註說明 (選填)</label><input type="text" value={expenseData.note} onChange={e => setExpenseData({...expenseData, note: e.target.value})} className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-slate-400 text-sm" placeholder="..."/></section>
+                <section><label className="text-lg font-bold text-slate-500 flex gap-2 items-center mb-2.5"><FileText size={20}/>備註說明</label><input type="text" value={expenseData.note} onChange={e => setExpenseData({...expenseData, note: e.target.value})} className="w-full p-5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-slate-400 text-lg" placeholder="..."/></section>
               </div>
             ) : (
-              <div className="space-y-5 animate-in fade-in duration-300">
-                <div className="flex gap-2 p-1 bg-slate-100 rounded-xl"><button onClick={()=>setIncomeMode('monthly_fee')} className={`flex-1 p-3 rounded-lg text-sm font-bold transition-all ${incomeMode === 'monthly_fee' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}>月費入帳</button><button onClick={()=>setIncomeMode('bank_adj')} className={`flex-1 p-3 rounded-lg text-sm font-bold transition-all ${incomeMode === 'bank_adj' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500'}`}>銀行調整</button></div>
+              <div className="space-y-7 animate-in fade-in duration-300">
+                <div className="flex gap-3 p-2 bg-slate-100 rounded-xl"><button onClick={()=>setIncomeMode('monthly_fee')} className={`flex-1 p-4 rounded-lg text-lg font-bold transition-all ${incomeMode === 'monthly_fee' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}>月費入帳</button><button onClick={()=>setIncomeMode('bank_adj')} className={`flex-1 p-4 rounded-lg text-lg font-bold transition-all ${incomeMode === 'bank_adj' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500'}`}>銀行調整</button></div>
                 {incomeMode === 'monthly_fee' ? (
-                  <div className="space-y-4 p-5 bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm">
-                    <label className="text-sm font-bold text-emerald-800 block">入帳月份</label><MonthYearPicker value={incomeData.month} onChange={v => setIncomeData({...incomeData, month:v})} availableYears={availableYears}/>
-                    <label className="text-sm font-bold text-emerald-800 block mt-2">單人預計匯入金額</label><div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span><input type="number" value={incomeData.monthlyFee} onChange={e => setIncomeData({...incomeData, monthlyFee: e.target.value})} className="w-full p-4 pl-8 rounded-xl border border-emerald-200 font-black text-2xl outline-none focus:ring-2 focus:ring-emerald-500"/></div>
-                    <p className="text-[10px] text-emerald-600 italic font-medium">※ 系統將自動為「咻咻」與「伶伶」各建立一筆該月 1 日的收入紀錄。</p>
+                  <div className="space-y-6 p-7 bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm">
+                    <label className="text-lg font-bold text-emerald-800 block">入帳月份</label><MonthYearPicker value={incomeData.month} onChange={v => setIncomeData({...incomeData, month:v})} availableYears={availableYears}/>
+                    <label className="text-lg font-bold text-emerald-800 block mt-4">單人預計匯入金額</label><div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span><input type="number" value={incomeData.monthlyFee} onChange={e => setIncomeData({...incomeData, monthlyFee: e.target.value})} className="w-full p-6 pl-10 rounded-xl border border-emerald-200 font-black text-4xl outline-none focus:ring-2 focus:ring-emerald-500"/></div>
+                    <p className="text-sm text-emerald-600 italic font-medium">※ 系統自動建立兩人的月費紀錄。</p>
                   </div>
                 ) : (
-                  <div className="space-y-4 p-5 bg-purple-50/50 rounded-2xl border border-purple-100 shadow-sm">
-                    <input type="date" value={incomeData.adjDate} onChange={e=>setIncomeData({...incomeData, adjDate: e.target.value})} className="w-full p-3 rounded-xl border border-purple-200 outline-none focus:ring-2 focus:ring-purple-500"/>
-                    <input type="text" placeholder="調整項目 (如：利息、手續費)" value={incomeData.adjItem} onChange={e=>setIncomeData({...incomeData, adjItem: e.target.value})} className="w-full p-3 rounded-xl border border-purple-200 outline-none focus:ring-2 focus:ring-purple-500"/>
-                    <div className="flex gap-2">
-                      <select value={incomeData.adjType} onChange={e=>setIncomeData({...incomeData, adjType: e.target.value})} className="p-3 border border-purple-200 rounded-xl bg-white font-bold text-purple-700 outline-none"><option value="add">➕ 增加</option><option value="sub">➖ 減少</option></select>
-                      <input type="number" placeholder="金額" value={incomeData.adjAmount} onChange={e=>setIncomeData({...incomeData, adjAmount: e.target.value})} className="flex-1 p-3 border border-purple-200 rounded-xl font-black text-xl outline-none focus:ring-2 focus:ring-purple-500"/>
+                  <div className="space-y-6 p-7 bg-purple-50/50 rounded-2xl border border-purple-100 shadow-sm">
+                    <input type="date" value={incomeData.adjDate} onChange={e=>setIncomeData({...incomeData, adjDate: e.target.value})} className="w-full p-5 rounded-xl border border-purple-200 outline-none focus:ring-2 focus:ring-purple-500 text-lg"/>
+                    <input type="text" placeholder="調整項目名稱" value={incomeData.adjItem} onChange={e=>setIncomeData({...incomeData, adjItem: e.target.value})} className="w-full p-5 rounded-xl border border-purple-200 outline-none focus:ring-2 focus:ring-purple-500 text-lg"/>
+                    <div className="flex gap-4">
+                      <select value={incomeData.adjType} onChange={e=>setIncomeData({...incomeData, adjType: e.target.value})} className="p-5 border border-purple-200 rounded-xl bg-white font-bold text-purple-700 outline-none text-lg"><option value="add">➕ 增加</option><option value="sub">➖ 減少</option></select>
+                      <input type="number" placeholder="金額" value={incomeData.adjAmount} onChange={e=>setIncomeData({...incomeData, adjAmount: e.target.value})} className="flex-1 p-5 border border-purple-200 rounded-xl font-black text-3xl outline-none focus:ring-2 focus:ring-purple-500"/>
                     </div>
                   </div>
                 )}
               </div>
             )}
-            {formError && <div className="p-3 bg-red-50 text-red-500 text-xs font-bold rounded-lg flex items-center gap-2"><AlertCircle size={14}/>{formError}</div>}
-            <button onClick={handleSubmit} disabled={isSubmitting || isLoadingRecords} className={`w-full py-4 rounded-2xl text-white font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-2 ${isSubmitting || isLoadingRecords ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.98]'}`}>{isSubmitting ? <><RefreshCw size={20} className="animate-spin"/> 處理中...</> : <><Send size={20}/> 確認儲存至 Google Sheet</>}</button>
+            {formError && <div className="p-5 bg-red-50 text-red-500 text-base font-bold rounded-lg flex items-center gap-3"><AlertCircle size={20}/>{formError}</div>}
+            <button onClick={handleSubmit} disabled={isSubmitting || isLoadingRecords} className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-xl transition-all flex items-center justify-center gap-3 ${isSubmitting || isLoadingRecords ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.98]'}`}>{isSubmitting ? <><RefreshCw size={28} className="animate-spin"/> 處理中...</> : <><Send size={28}/> 儲存至 Google Sheet</>}</button>
           </main>
         ) : (
-          <main className="p-5 space-y-6 flex-1 bg-slate-50 overflow-y-auto custom-scrollbar">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
-              <div className="flex justify-between items-center"><label className="font-bold text-slate-600 text-sm">統計月份</label><MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} availableYears={availableYears}/></div>
-              <div className="flex justify-between items-end"><div><p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mb-0.5">Monthly Total Expense</p><p className="text-3xl font-black text-slate-800 tracking-tighter">${totalExp.toLocaleString()}</p></div><div className="text-right"><p className="text-[10px] text-emerald-500 font-bold flex items-center justify-end gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 帳戶餘額</p><p className="text-xl font-black text-emerald-600 tracking-tight">${currentBalance.toLocaleString()}</p></div></div>
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100"><p className="text-xs font-black text-blue-700 mb-1 flex items-center gap-1">👦🏻 咻咻</p><p className="text-[9px] text-slate-400 font-medium">代墊: ${xiuxiuPaid.toLocaleString()}</p><p className={`text-xs font-black mt-1.5 ${xiuxiuFee-xiuxiuPaid > 0 ? 'text-red-600' : 'text-emerald-600'}`}>{xiuxiuFee-xiuxiuPaid > 0 ? `應補: $${(xiuxiuFee-xiuxiuPaid).toLocaleString()}` : '✅ 已達標'}</p></div>
-                <div className="p-3 bg-purple-50/50 rounded-xl border border-purple-100"><p className="text-xs font-black text-purple-700 mb-1 flex items-center gap-1">👧🏻 伶伶</p><p className="text-[9px] text-slate-400 font-medium">代墊: ${linglingPaid.toLocaleString()}</p><p className={`text-xs font-black mt-1.5 ${linglingFee-linglingPaid > 0 ? 'text-red-600' : 'text-emerald-600'}`}>{linglingFee-linglingPaid > 0 ? `應補: $${(linglingFee-linglingPaid).toLocaleString()}` : '✅ 已達標'}</p></div>
+          <main className="p-6 space-y-8 flex-1 bg-slate-50 overflow-y-auto custom-scrollbar">
+            <div className="bg-white p-7 rounded-2xl shadow-sm border border-slate-100 space-y-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-2.5 h-full bg-blue-500"></div>
+              <div className="flex justify-between items-center"><label className="font-bold text-slate-600 text-lg">統計月份</label><MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} availableYears={availableYears}/></div>
+              <div className="flex justify-between items-end"><div><p className="text-sm text-slate-400 font-bold tracking-widest uppercase mb-1">Monthly Total Expense</p><p className="text-5xl font-black text-slate-800 tracking-tighter">${totalExp.toLocaleString()}</p></div><div className="text-right"><p className="text-sm text-emerald-500 font-bold flex items-center justify-end gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> 帳戶餘額</p><p className="text-3xl font-black text-emerald-600 tracking-tight">${currentBalance.toLocaleString()}</p></div></div>
+              
+              <div className="grid grid-cols-2 gap-5 pt-2">
+                <div className="p-5 bg-blue-50/60 rounded-xl border border-blue-100 shadow-sm"><p className="text-lg font-black text-blue-700 mb-2 flex items-center gap-1.5">👦🏻 咻咻</p><p className="text-sm text-slate-500 font-medium">代墊: ${xiuxiuPaid.toLocaleString()}</p><p className={`text-base font-black mt-3 ${xiuxiuFee-xiuxiuPaid > 0 ? 'text-red-600 underline underline-offset-4' : 'text-emerald-600'}`}>{xiuxiuFee-xiuxiuPaid > 0 ? `應補: $${(xiuxiuFee-xiuxiuPaid).toLocaleString()}` : '✅ 已達標'}</p></div>
+                <div className="p-5 bg-purple-50/60 rounded-xl border border-purple-100 shadow-sm"><p className="text-lg font-black text-purple-700 mb-2 flex items-center gap-1.5">👧🏻 伶伶</p><p className="text-sm text-slate-500 font-medium">代墊: ${linglingPaid.toLocaleString()}</p><p className={`text-base font-black mt-3 ${linglingFee-linglingPaid > 0 ? 'text-red-600 underline underline-offset-4' : 'text-emerald-600'}`}>{linglingFee-linglingPaid > 0 ? `應補: $${(linglingFee-linglingPaid).toLocaleString()}` : '✅ 已達標'}</p></div>
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2 text-sm"><PieChartIcon size={16} className="text-blue-500"/>支出比例分析</h3>
-              <div className="flex gap-2 items-center justify-center mb-6 bg-slate-50 p-2 rounded-xl border border-slate-200/50"><MonthYearPicker value={analysisStartMonth} onChange={setAnalysisStartMonth} availableYears={availableYears}/><span className="text-slate-300 font-bold">~</span><MonthYearPicker value={analysisEndMonth} onChange={setAnalysisEndMonth} availableYears={availableYears}/></div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <h3 className="font-bold text-slate-700 mb-6 flex items-center gap-2.5 text-lg"><PieChartIcon size={24} className="text-blue-500"/>支出比例分析</h3>
+              <div className="flex gap-2 items-center justify-center mb-8 bg-slate-50 p-3 rounded-xl border border-slate-200/50"><MonthYearPicker value={analysisStartMonth} onChange={setAnalysisStartMonth} availableYears={availableYears}/><span className="text-slate-300 font-bold text-xl">~</span><MonthYearPicker value={analysisEndMonth} onChange={setAnalysisEndMonth} availableYears={availableYears}/></div>
               <PieChart data={pieData} />
             </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center px-1"><h3 className="font-bold text-slate-700 flex items-center gap-2 text-sm"><History size={16} className="text-blue-500"/>收支交易明細</h3><select value={listFilter} onChange={e=>setListFilter(e.target.value)} className="text-[10px] font-bold p-1.5 border border-slate-200 rounded-lg bg-white shadow-sm outline-none focus:ring-1 focus:ring-blue-500">{listFilterOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+            <div className="space-y-5">
+              <div className="flex justify-between items-center px-1"><h3 className="font-bold text-slate-700 flex items-center gap-2.5 text-lg"><History size={24} className="text-blue-500"/>收支交易明細</h3><select value={listFilter} onChange={e=>setListFilter(e.target.value)} className="text-sm font-bold p-2.5 border border-slate-200 rounded-lg bg-white shadow-sm outline-none focus:ring-1 focus:ring-blue-500">{listFilterOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               {isLoadingRecords ? (
-                <div className="flex flex-col items-center py-10 text-slate-400 gap-2"><RefreshCw size={24} className="animate-spin"/><p className="text-xs font-medium">讀取 Google Sheet 中...</p></div>
+                <div className="flex flex-col items-center py-16 text-slate-400 gap-4"><RefreshCw size={36} className="animate-spin"/><p className="text-base font-medium">資料載入中...</p></div>
               ) : filtered.length === 0 ? (
-                <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-400 text-xs font-medium">該月份尚無符合的明細紀錄</div>
+                <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-400 text-base font-medium">該月份尚無符合的紀錄</div>
               ) : (
-                <div className="space-y-2.5">
+                <div className="space-y-4">
                   {filtered.map((r, i) => (
-                    <div key={i} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center transition-all hover:border-blue-200">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-sm shadow-inner ${r.spender === '咻咻' ? 'bg-blue-400' : r.spender === '伶伶' ? 'bg-purple-400' : 'bg-slate-400'}`}>{r.spender ? r.spender[0] : '?'}</div>
-                        <div className="min-w-0 flex flex-col">
-                          <p className="font-bold text-slate-800 text-sm truncate leading-tight">{r.item}</p>
-                          <p className="text-[10px] text-slate-400 font-medium mt-1">{r.category || (r.parsedAmount > 0 ? '收入入帳' : '一般支出')} · {r.date}</p>
+                    <div key={i} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center transition-all hover:border-blue-200">
+                      <div className="flex items-center gap-5 min-w-0">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg shadow-inner ${r.spender === '咻咻' ? 'bg-blue-400' : r.spender === '伶伶' ? 'bg-purple-400' : 'bg-slate-400'}`}>{r.spender ? r.spender[0] : '?'}</div>
+                        <div className="min-w-0 flex flex-col gap-1">
+                          <p className="font-bold text-slate-800 text-lg truncate leading-tight">{r.item}</p>
+                          <p className="text-sm text-slate-400 font-medium">{r.category || (r.parsedAmount > 0 ? '收入入帳' : '一般支出')} · {r.date}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`font-black text-sm tracking-tight ${r.parsedAmount > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>{r.parsedAmount > 0 ? '+' : '-'}${Math.abs(r.parsedAmount).toLocaleString()}</p>
-                        <p className="text-[9px] text-slate-300 font-bold mt-0.5">餘: ${r.computedBalance?.toLocaleString()}</p>
+                        <p className={`font-black text-xl tracking-tight ${r.parsedAmount > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>{r.parsedAmount > 0 ? '+' : '-'}${Math.abs(r.parsedAmount).toLocaleString()}</p>
+                        <p className="text-xs text-slate-300 font-bold mt-1">餘: ${r.computedBalance?.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -407,14 +408,14 @@ const App = () => {
           </main>
         )}
 
-        <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t border-slate-200 flex h-16 items-center z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-          <button onClick={() => setActiveTab('input')} className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all ${activeTab === 'input' ? 'text-blue-600 scale-110' : 'text-slate-400 hover:text-slate-600'}`}><Edit size={20}/><span className="text-[10px] font-black">開始記帳</span></button>
-          <button onClick={() => setActiveTab('report')} className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all ${activeTab === 'report' ? 'text-blue-600 scale-110' : 'text-slate-400 hover:text-slate-600'}`}><BarChart size={20}/><span className="text-[10px] font-black">分析明細</span></button>
+        <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex h-20 items-center z-30 shadow-[0_-4px_25px_rgba(0,0,0,0.06)]">
+          <button onClick={() => setActiveTab('input')} className={`flex-1 flex flex-col items-center justify-center gap-2 transition-all ${activeTab === 'input' ? 'text-blue-600 scale-110' : 'text-slate-400 hover:text-slate-600'}`}><Edit size={28} color={activeTab === 'input' ? "#2563eb" : "#94a3b8"}/><span className={`text-sm font-black tracking-wide ${activeTab === 'input' ? "text-blue-600" : "text-slate-400"}`}>開始記帳</span></button>
+          <button onClick={() => setActiveTab('report')} className={`flex-1 flex flex-col items-center justify-center gap-2 transition-all ${activeTab === 'report' ? 'text-blue-600 scale-110' : 'text-slate-400 hover:text-slate-600'}`}><BarChart size={28} color={activeTab === 'report' ? "#2563eb" : "#94a3b8"}/><span className={`text-sm font-black tracking-wide ${activeTab === 'report' ? "text-blue-600" : "text-slate-400"}`}>分析明細</span></button>
         </nav>
         
         {submitStatus === 'success' && (
-          <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl z-[60] flex items-center gap-2 font-bold animate-in fade-in slide-in-from-top-4">
-            <CheckCircle size={18}/> 成功儲存至雲端！
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-8 py-5 rounded-full shadow-2xl z-[60] flex items-center gap-3 font-bold animate-in fade-in slide-in-from-top-4 text-lg">
+            <CheckCircle size={26}/> 成功儲存至雲端！
           </div>
         )}
       </div>
