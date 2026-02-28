@@ -494,7 +494,7 @@
                 const diff = fee - paid;
                 if (diff > 0) return { isTargetMet: false, label: '匯給帳戶', amount: `$${diff.toLocaleString()}`, color: 'text-red-600' };
                 if (diff < 0) return { isTargetMet: false, label: '帳戶提撥', amount: `$${Math.abs(diff).toLocaleString()}`, color: 'text-emerald-600' };
-                return { isTargetMet: true, text: '✅ 已達標', color: 'text-emerald-600' };
+                return { isTargetMet: true, text: '✅ 無須動作', color: 'text-emerald-600' };
             };
             const xStatus = getStatusText(xiuxiuFee, xiuxiuPaid);
             const lStatus = getStatusText(linglingFee, linglingPaid);
@@ -515,7 +515,7 @@
                 <div className="min-h-screen bg-slate-50 text-slate-800 flex justify-center pb-24">
                     <div className="w-full max-w-md bg-white shadow-xl flex flex-col min-h-screen relative">
                         <header className="bg-blue-600 text-white p-6 sticky top-0 z-20 flex justify-between items-center shadow-md">
-                            <div className="flex items-center gap-3"><Icon name="Wallet" size={32} /><h1 className="text-3xl font-bold tracking-tight">咻伶伶小財庫</h1></div>
+                            <div className="flex items-center gap-3"><Icon name="Wallet" size={32} /><h1 className="text-3xl font-bold tracking-tight">咻咻伶伶小財庫</h1></div>
                             <button onClick={() => setShowSettings(!showSettings)} className="text-sm font-bold bg-blue-700/50 hover:bg-blue-700 px-4 py-2 rounded-full border border-blue-400/30">⚙️ 設定</button>
                         </header>
 
