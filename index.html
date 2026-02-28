@@ -63,7 +63,45 @@
             );
         };
 
-        // --- 智慧型年月選擇器 (分開選、選項只顯示資料庫存在的年月) ---
+        // --- 自由年月選擇器 (不限制選項，用於新增紀錄) ---
+        const FreeMonthYearPicker = ({ value, onChange }) => {
+            const [selectedYear, selectedMonth] = (value || '2024-01').split('-');
+            
+            const currentYear = new Date().getFullYear();
+            const availableYears = [];
+            // 提供前後各3年的選擇範圍
+            for (let i = currentYear - 3; i <= currentYear + 3; i++) {
+                availableYears.push(i.toString());
+            }
+            if (!availableYears.includes(selectedYear)) {
+                availableYears.push(selectedYear);
+            }
+            availableYears.sort((a, b) => b.localeCompare(a)); // 降冪排序
+
+            const availableMonths = Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0'));
+
+            return (
+                <div className="flex items-center justify-center bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 shadow-sm shrink-0 min-w-0">
+                    <select 
+                        value={selectedYear} 
+                        onChange={(e) => onChange(`${e.target.value}-${selectedMonth}`)} 
+                        className="bg-transparent font-bold text-slate-700 outline-none cursor-pointer text-center text-sm sm:text-base appearance-none min-w-0 px-1"
+                    >
+                        {availableYears.map(y => <option key={y} value={y}>{y}年</option>)}
+                    </select>
+                    <span className="text-slate-300 font-light text-sm sm:text-base shrink-0">/</span>
+                    <select 
+                        value={selectedMonth} 
+                        onChange={(e) => onChange(`${selectedYear}-${e.target.value}`)} 
+                        className="bg-transparent font-bold text-slate-700 outline-none cursor-pointer text-center text-sm sm:text-base appearance-none min-w-0 px-1"
+                    >
+                        {availableMonths.map(m => <option key={m} value={m}>{m}月</option>)}
+                    </select>
+                </div>
+            );
+        };
+
+        // --- 智慧型年月選擇器 (限制選項，用於報表篩選) ---
         const MonthYearPicker = ({ value, onChange, availableYearMonths }) => {
             const [selectedYear, selectedMonth] = value.split('-');
 
@@ -112,7 +150,7 @@
             );
         };
 
-        // --- SVG 圓餅圖組件 (全部引線拉出、放大圖表、緊湊排版) ---
+        // --- SVG 圓餅圖組件 ---
         const PieChart = ({ data }) => {
             const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, name: '', value: 0, percent: '' });
             const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -150,7 +188,7 @@
                 return { ...slice, angle, percentNum, displayPercent, isRight, pathData, startX, startY, elbowX, elbowY };
             });
 
-            const SPACING = 0.24; // 配合字體放大，加寬防撞推擠的垂直間距
+            const SPACING = 0.24; 
             const resolveCollisions = (slices) => {
                 if (slices.length <= 1) return;
                 for(let iter = 0; iter < 15; iter++) {
@@ -521,17 +559,20 @@
                                         {incomeMode === 'monthly_fee' ? (
                                             <div className="space-y-6 p-7 bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm">
                                                 <label className="text-lg font-bold text-emerald-800 block">入帳月份</label>
-                                                <MonthYearPicker value={incomeData.month} onChange={v => setIncomeData({...incomeData, month:v})} availableYearMonths={availableYearMonths}/>
+                                                {/* 變更為自由輸入的選擇器 */}
+                                                <FreeMonthYearPicker value={incomeData.month} onChange={v => setIncomeData({...incomeData, month:v})} />
                                                 <label className="text-lg font-bold text-emerald-800 block mt-4">預計匯入金額</label>
                                                 <div className="relative">
                                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                                                    <input type="number" value={incomeData.monthlyFee} onChange={e => setIncomeData({...incomeData, monthlyFee: e.target.value})} onWheel={(e) => e.target.blur()} className="w-full p-6 pl-10 rounded-xl border border-emerald-200 font-black text-4xl outline-none focus:ring-2 focus:ring-emerald-500"/>
+                                                    {/* 縮小字體 text-4xl -> text-3xl */}
+                                                    <input type="number" value={incomeData.monthlyFee} onChange={e => setIncomeData({...incomeData, monthlyFee: e.target.value})} onWheel={(e) => e.target.blur()} className="w-full p-6 pl-10 rounded-xl border border-emerald-200 font-black text-3xl outline-none focus:ring-2 focus:ring-emerald-500"/>
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="space-y-6 p-7 bg-purple-50/50 rounded-2xl border border-purple-100 shadow-sm">
                                                 <label className="text-lg font-bold text-purple-800 block">調整月份</label>
-                                                <MonthYearPicker value={incomeData.adjMonth} onChange={v => setIncomeData({...incomeData, adjMonth:v})} availableYearMonths={availableYearMonths}/>
+                                                {/* 變更為自由輸入的選擇器 */}
+                                                <FreeMonthYearPicker value={incomeData.adjMonth} onChange={v => setIncomeData({...incomeData, adjMonth:v})} />
                                                 <input type="text" placeholder="調整項目名稱" value={incomeData.adjItem} onChange={e=>setIncomeData({...incomeData, adjItem: e.target.value})} className="w-full p-5 mt-2 rounded-xl border border-purple-200 outline-none text-lg focus:ring-2 focus:ring-purple-500"/>
                                                 
                                                 <div className="flex gap-2 w-full">
@@ -539,7 +580,8 @@
                                                         <option value="add">➕ 增加</option>
                                                         <option value="sub">➖ 減少</option>
                                                     </select>
-                                                    <input type="number" placeholder="金額" value={incomeData.adjAmount} onChange={e=>setIncomeData({...incomeData, adjAmount: e.target.value})} onWheel={(e) => e.target.blur()} className="flex-1 min-w-0 p-4 border border-purple-200 rounded-xl font-black text-3xl outline-none focus:ring-2 focus:ring-purple-500"/>
+                                                    {/* 縮小字體 text-3xl -> text-2xl */}
+                                                    <input type="number" placeholder="金額" value={incomeData.adjAmount} onChange={e=>setIncomeData({...incomeData, adjAmount: e.target.value})} onWheel={(e) => e.target.blur()} className="flex-1 min-w-0 p-4 border border-purple-200 rounded-xl font-black text-2xl outline-none focus:ring-2 focus:ring-purple-500"/>
                                                 </div>
                                             </div>
                                         )}
