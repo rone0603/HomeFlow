@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>咻咻伶伶小財庫</title>
+    
+    <!-- 設定手機桌面 Icon (藍色圓角 + 錢袋符號) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232563eb' rx='20'/%3E%3Ctext x='50' y='50' font-size='65' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+    <meta name="apple-mobile-web-app-title" content="小財庫">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi5bCP6LKh5bqrIiwic2hvcnRfbmFtZSI6IuWwj+iyoeW6qyIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDEwMCAxMDAnJTNFLTNDcmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgZmlsbD0nJTIzMjU2M2ViJyByeD0nMjAnLyUzRSUzQ3RleHQgeD0nNTAnIHk9JzUwJyBmb250LXNpemU9JzY1JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0nY2VudHJhbCclM0UlRjAlOUYlOTIlQjAlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInNpemVzIjoiYW55In1dLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZjhmYWZjIiwidGhlbWVfY29sb3ciOiIjMjU2M2ViIn0=">
+
     <!-- 引入 React 核心資源 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -72,7 +81,7 @@
             );
         };
 
-        // --- SVG 圓餅圖組件 (徹底修復切字、壓圖、圖層順序、顏色統一) ---
+        // --- SVG 圓餅圖組件 (全部引線拉出、放大圖表、緊湊排版) ---
         const PieChart = ({ data }) => {
             const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, name: '', value: 0, percent: '' });
             const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -89,7 +98,7 @@
                 const percentNum = (slice.value / total) * 100;
                 const percent = Math.round(percentNum);
                 const displayPercent = percent === 0 && slice.value > 0 ? '<1%' : `${percent}%`;
-                const isSmallSlice = percentNum <= 8; 
+                
                 const midAngle = cumulativeAngle + angle / 2;
                 const isRight = Math.cos(midAngle) >= -0.01; 
                 
@@ -101,21 +110,19 @@
                 const largeArcFlag = angle > Math.PI ? 1 : 0;
                 const pathData = `M 0 0 L ${x1} ${y1} A 1 1 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
                 
-                const textXInside = 0.82 * Math.cos(midAngle);
-                const textYInside = 0.82 * Math.sin(midAngle);
-                
-                const startX = 0.95 * Math.cos(midAngle);
-                const startY = 0.95 * Math.sin(midAngle);
-                const elbowRadius = 1.15; 
+                const startX = Math.cos(midAngle);
+                const startY = Math.sin(midAngle);
+                const elbowRadius = 1.12; 
                 const elbowX = elbowRadius * Math.cos(midAngle);
                 const elbowY = elbowRadius * Math.sin(midAngle);
-                return { ...slice, angle, percentNum, displayPercent, isSmallSlice, isRight, pathData, textXInside, textYInside, startX, startY, elbowX, elbowY };
+                // 所有項目現在都往外拉，移除 isSmallSlice
+                return { ...slice, angle, percentNum, displayPercent, isRight, pathData, startX, startY, elbowX, elbowY };
             });
 
-            const SPACING = 0.22; 
+            const SPACING = 0.24; // 配合字體放大，加寬防撞推擠的垂直間距
             const resolveCollisions = (slices) => {
                 if (slices.length <= 1) return;
-                for(let iter = 0; iter < 12; iter++) {
+                for(let iter = 0; iter < 15; iter++) {
                     for (let i = 1; i < slices.length; i++) {
                         const diff = slices[i].elbowY - slices[i-1].elbowY;
                         if (diff < SPACING) {
@@ -126,16 +133,16 @@
                     }
                 }
             };
-            const rightSlices = slicesData.filter(s => s.isSmallSlice && s.isRight).sort((a, b) => a.elbowY - b.elbowY);
-            const leftSlices = slicesData.filter(s => s.isSmallSlice && !s.isRight).sort((a, b) => a.elbowY - b.elbowY);
+            const rightSlices = slicesData.filter(s => s.isRight).sort((a, b) => a.elbowY - b.elbowY);
+            const leftSlices = slicesData.filter(s => !s.isRight).sort((a, b) => a.elbowY - b.elbowY);
             resolveCollisions(rightSlices);
             resolveCollisions(leftSlices);
 
             return (
                 <div className="flex flex-col items-center w-full">
                     <div className="w-full max-w-[500px] relative flex justify-center">
-                        {/* 終極裁切留白：維持寬度 6.4 (防左右切字)，將高度從 3.6 嚴格壓縮至 2.7 (Y軸 -1.35 到 1.35)，消除上下所有多餘空白 */}
-                        <svg viewBox="-3.2 -1.35 6.4 2.7" className="w-full h-auto drop-shadow-md overflow-visible" style={{ maxHeight: '280px' }} onMouseLeave={handleMouseLeave}>
+                        {/* 稍微加寬 viewBox (從 5.2 改為 5.8)，以容納變大後的字體，保證不被切斷 */}
+                        <svg viewBox="-2.9 -1.25 5.8 2.5" className="w-full h-auto drop-shadow-md overflow-visible" style={{ maxHeight: '340px' }} onMouseLeave={handleMouseLeave}>
                             
                             {/* 第一層：畫所有的彩色扇形 */}
                             {slicesData.map((slice, i) => {
@@ -149,47 +156,37 @@
                                 );
                             })}
 
-                            {/* 第二層：畫中心白圈，半徑加大避免擋住字 */}
+                            {/* 第二層：畫中心白圈，半徑適中避免擋住字 */}
                             <circle cx="0" cy="0" r="0.65" fill="#ffffff" className="pointer-events-none" />
 
-                            {/* 第三層：畫所有的文字與引線，保證蓋在所有圖形上方 */}
+                            {/* 第三層：所有內容用引線拉出 */}
                             {slicesData.map((slice, i) => {
                                 if (slice.value === total) {
                                     return (
-                                        <text key={`text-${i}`} textAnchor="middle" fill="#475569" fontSize="0.18" fontWeight="900" className="pointer-events-none">
+                                        <text key={`text-${i}`} textAnchor="middle" fill="#475569" fontSize="0.22" fontWeight="900" className="pointer-events-none">
                                             <tspan x="0" y="-0.1">{slice.name}</tspan>
-                                            <tspan x="0" y="0.14">{slice.displayPercent}</tspan>
+                                            <tspan x="0" y="0.16">{slice.displayPercent}</tspan>
                                         </text>
                                     );
                                 }
-                                const lineExt = slice.isRight ? 0.25 : -0.25; 
+                                const lineExt = slice.isRight ? 0.2 : -0.2; 
                                 const endX = slice.elbowX + lineExt;
                                 const textXOutside = endX + (slice.isRight ? 0.05 : -0.05);
                                 return (
                                     <g key={`text-${i}`} className="pointer-events-none">
-                                        {!slice.isSmallSlice && (
-                                            /* 內部文字深灰 + 白色光暈，確保在任何色塊上都極清晰 */
-                                            <text textAnchor="middle" fill="#475569" fontSize="0.14" fontWeight="900" stroke="#ffffff" strokeWidth="0.03" strokeLinejoin="round" style={{ paintOrder: 'stroke fill' }} className="pointer-events-none">
-                                                <tspan x={slice.textXInside} y={slice.textYInside - 0.06}>{slice.name}</tspan>
-                                                <tspan x={slice.textXInside} y={slice.textYInside + 0.12}>{slice.displayPercent}</tspan>
-                                            </text>
-                                        )}
-                                        {slice.isSmallSlice && (
-                                            <g className="pointer-events-none">
-                                                <polyline points={`${slice.startX},${slice.startY} ${slice.elbowX},${slice.elbowY} ${endX},${slice.elbowY}`} fill="none" stroke={slice.color} strokeWidth="0.02" />
-                                                <text x={textXOutside} y={slice.elbowY} textAnchor={slice.isRight ? "start" : "end"} dominantBaseline="central" fill="#475569" fontSize="0.14" fontWeight="bold">
-                                                    {slice.name} {slice.displayPercent}
-                                                </text>
-                                            </g>
-                                        )}
+                                        <polyline points={`${slice.startX},${slice.startY} ${slice.elbowX},${slice.elbowY} ${endX},${slice.elbowY}`} fill="none" stroke={slice.color} strokeWidth="0.02" />
+                                        {/* 將外部引線字體顯著放大 */}
+                                        <text x={textXOutside} y={slice.elbowY} textAnchor={slice.isRight ? "start" : "end"} dominantBaseline="central" fill="#475569" fontSize="0.17" fontWeight="bold">
+                                            {slice.name} {slice.displayPercent}
+                                        </text>
                                     </g>
                                 );
                             })}
                             
-                            {/* 第四層：中心總支出文字，縮小字體並微調高度 */}
+                            {/* 第四層：中心總支出文字，同步微幅放大 */}
                             <text textAnchor="middle" dominantBaseline="central" className="pointer-events-none">
-                                <tspan x="0" y="-0.12" fill="#94a3b8" fontSize="0.13" fontWeight="700">總支出</tspan>
-                                <tspan x="0" y="0.18" fill="#1e293b" fontSize="0.20" fontWeight="900">${total.toLocaleString()}</tspan>
+                                <tspan x="0" y="-0.12" fill="#94a3b8" fontSize="0.14" fontWeight="700">總支出</tspan>
+                                <tspan x="0" y="0.18" fill="#1e293b" fontSize="0.24" fontWeight="900">${total.toLocaleString()}</tspan>
                             </text>
                         </svg>
                     </div>
@@ -304,7 +301,6 @@
                     if (transactionMode === 'expense') {
                         payload = { action: 'addRecord', date: expenseData.date, spender: expenseData.spender, item: expenseData.item, category: expenseData.category, expenseAmount: Number(expenseData.amount), incomeAmount: "", note: expenseData.note };
                     } else if (incomeMode === 'monthly_fee') {
-                        // 【需求1】防呆檢查：該月份是否已有月費入帳
                         const feeItem = `${incomeData.month} 月費`;
                         const alreadyExists = records.some(r => r.item === feeItem);
                         if (alreadyExists) {
@@ -330,7 +326,6 @@
                 setIsSubmitting(false);
             };
 
-            // 【需求5】單筆修改與刪除邏輯 (不再自動連動其他紀錄)
             const openEditModal = (record) => {
                 setEditingRecord({
                     ...record,
@@ -419,7 +414,6 @@
             }, [records]);
             const filtered = baseRecords.filter(r => listFilter === '全部收支' ? true : (listFilter === '月費' ? (r.item && r.item.includes('月費')) : r.category === listFilter));
 
-            // 【需求3】結算文字、顏色與獨立一行邏輯
             const getStatusText = (fee, paid) => {
                 const diff = fee - paid;
                 if (diff > 0) return { isTargetMet: false, label: '匯給帳戶', amount: `$${diff.toLocaleString()}`, color: 'text-red-600' };
@@ -477,7 +471,6 @@
                                             <section><label className="text-lg font-bold text-red-500 mb-2.5 block">支出金額</label>
                                                 <div className="relative">
                                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                                                    {/* 防滾輪干擾 onWheel={() => e.target.blur()} */}
                                                     <input type="number" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} onWheel={(e) => e.target.blur()} className="w-full p-5 pl-10 bg-slate-50 rounded-xl border border-slate-200 text-3xl font-black outline-none focus:ring-2 focus:ring-red-500"/>
                                                 </div>
                                             </section>
@@ -521,7 +514,17 @@
                             <main className="p-4 sm:p-6 space-y-8 flex-1 bg-slate-50 overflow-y-auto custom-scrollbar">
                                 <div className="bg-white p-7 rounded-2xl shadow-sm border border-slate-100 space-y-6 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-2.5 h-full bg-blue-500"></div>
-                                    <div className="flex justify-between items-center"><label className="font-bold text-slate-600 text-lg">統計月份</label><MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} availableYears={availableYears}/></div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <label className="font-bold text-slate-600 text-lg">統計月份</label>
+                                            <MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} availableYears={availableYears}/>
+                                        </div>
+                                        {/* 新增的重新整理按鈕 */}
+                                        <button onClick={fetchRecords} disabled={isLoadingRecords} className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-bold transition-all active:scale-95 shadow-sm border border-blue-100 shrink-0">
+                                            <Icon name="RefreshCw" size={16} className={isLoadingRecords ? "animate-spin" : ""} />
+                                            <span>{isLoadingRecords ? "讀取中" : "重新整理"}</span>
+                                        </button>
+                                    </div>
                                     <div className="flex justify-between items-end">
                                         <div>
                                             <p className="text-sm text-slate-500 font-bold mb-1">當月支出</p>
@@ -554,24 +557,22 @@
 
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2.5 text-lg"><Icon name="PieChartIcon" size={24} className="text-blue-500"/>支出比例分析</h3>
-                                    {/* 將原本的 mb-8 縮小為 mb-2，讓圓餅圖往上靠攏 */}
                                     <div className="flex gap-2 items-center justify-center mb-2 bg-slate-50 p-3 rounded-xl border border-slate-200/50"><MonthYearPicker value={analysisStartMonth} onChange={setAnalysisStartMonth} availableYears={availableYears}/><span className="text-slate-300 font-bold text-xl">~</span><MonthYearPicker value={analysisEndMonth} onChange={setAnalysisEndMonth} availableYears={availableYears}/></div>
                                     <PieChart data={pieData} />
                                 </div>
 
                                 <div className="space-y-5">
                                     <div className="flex justify-between items-center px-1"><h3 className="font-bold text-slate-700 flex items-center gap-2.5 text-lg"><Icon name="History" size={24} className="text-blue-500"/>收支明細</h3><select value={listFilter} onChange={e=>setListFilter(e.target.value)} className="text-sm font-bold p-2.5 border border-slate-200 rounded-lg bg-white shadow-sm outline-none focus:ring-1 focus:ring-blue-500">{listFilterOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         {filtered.map((r, i) => (
-                                            /* 徹底防擠壓與斷行的響應式佈局 */
-                                            <div key={i} className="p-4 sm:p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center transition-all hover:border-blue-200">
+                                            <div key={i} className="p-3 sm:p-4 bg-white rounded-xl border border-slate-100 shadow-sm flex justify-between items-center transition-all hover:border-blue-200">
                                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white font-black text-lg shadow-inner shrink-0 ${r.spender === '咻咻' ? 'bg-blue-400' : r.spender === '伶伶' ? 'bg-purple-400' : 'bg-slate-400'}`}>{r.spender ? r.spender[0] : '?'}</div>
+                                                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white font-black text-lg shadow-inner shrink-0 ${r.spender === '咻咻' ? 'bg-blue-400' : r.spender === '伶伶' ? 'bg-purple-400' : 'bg-slate-400'}`}>{r.spender ? r.spender[0] : '?'}</div>
                                                     <div className="min-w-0 flex flex-col gap-0.5">
                                                         <p className="font-bold text-slate-800 text-base sm:text-lg truncate leading-tight">{r.item}</p>
-                                                        <p className="text-xs sm:text-sm text-slate-400 font-medium truncate">{r.category || '收入入帳'} · {r.date}</p>
+                                                        <p className="text-sm sm:text-base text-slate-500 font-medium truncate">{r.category || '收入入帳'} · {r.date}</p>
                                                         {r.note && (
-                                                            <p className="text-xs sm:text-sm text-slate-500 font-medium flex items-center gap-1.5 mt-1 truncate">
+                                                            <p className="text-xs sm:text-sm text-slate-400 font-medium flex items-center gap-1.5 mt-0.5 truncate">
                                                                 <Icon name="FileText" size={14} className="shrink-0" /> <span className="truncate">{r.note}</span>
                                                             </p>
                                                         )}
@@ -580,7 +581,7 @@
                                                 <div className="flex items-center gap-2 shrink-0 ml-2">
                                                     <div className="text-right">
                                                         <p className={`font-black text-lg sm:text-xl tracking-tight ${r.parsedAmount > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>{r.parsedAmount > 0 ? '+' : '-'}${Math.abs(r.parsedAmount).toLocaleString()}</p>
-                                                        <p className="text-[10px] sm:text-xs text-slate-400 font-bold mt-1">餘: ${r.computedBalance?.toLocaleString()}</p>
+                                                        <p className="text-xs sm:text-sm text-slate-500 font-bold mt-0.5">餘: ${r.computedBalance?.toLocaleString()}</p>
                                                     </div>
                                                     <button onClick={() => openEditModal(r)} className="p-1.5 sm:p-2 ml-1 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all shrink-0">
                                                         <Icon name="Edit" size={20} />
